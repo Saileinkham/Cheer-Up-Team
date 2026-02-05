@@ -1,0 +1,147 @@
+.loginRoot {
+  min-height: 100vh;
+  background: #ffffff;
+  color: #0f172a;
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 980px) {
+  .loginRoot {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.loginLeft {
+  position: relative;
+  padding: 22px;
+  display: grid;
+  align-items: center;
+  justify-items: center;
+  background: #ffffff;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+@media (min-width: 980px) {
+  .loginLeft {
+    border-bottom: none;
+    border-right: 1px solid rgba(15, 23, 42, 0.08);
+  }
+}
+
+.loginLeftInner {
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  display: grid;
+  place-items: center;
+}
+
+.loginRight {
+  padding: 22px;
+  display: grid;
+  align-items: center;
+  background: #ffffff;
+  position: relative;
+  overflow: hidden;
+}
+
+.loginRightImage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 35% 70%;
+  z-index: 0;
+  transform: scale(1.14);
+}
+
+
+.loginCard {
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.14);
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 12px 36px rgba(15, 23, 42, 0.10);
+  width: 100%;
+  max-width: 420px;
+}
+
+.loginHello {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 4px;
+  text-align: center;
+}
+
+.loginHelloTitle {
+  font-weight: 900;
+  font-size: 28px;
+  letter-spacing: 0.2px;
+  color: rgba(15, 23, 42, 0.92);
+}
+
+.loginInputWrap {
+  position: relative;
+  display: grid;
+  width: 100%;
+}
+
+.loginInputIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  color: rgba(37, 99, 235, 0.85);
+  pointer-events: none;
+}
+
+.loginCard .row input {
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.04);
+  border-color: rgba(15, 23, 42, 0.14);
+  padding-left: 40px;
+  width: 100%;
+}
+
+.loginCard .row input:focus {
+  border-color: rgba(37, 99, 235, 0.55);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+.loginPasswordRow {
+  position: relative;
+  display: grid;
+  width: 100%;
+}
+
+.loginPasswordRow .loginInputIcon {
+  left: 12px;
+}
+
+.loginPasswordRow input {
+  padding-right: 72px;
+  padding-left: 40px;
+}
+
+.loginShowBtn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  color: rgba(37, 99, 235, 0.95);
+  font-weight: 900;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+@media (max-width: 979px) {
+  .loginRight {
+    display: none;
+  }
+}

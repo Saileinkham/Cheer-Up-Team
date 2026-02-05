@@ -1,0 +1,41 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isManager() {
+      return isSignedIn() && (request.auth.token.role == 'admin' || request.auth.token.role == 'manager');
+    }
+
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.role == 'admin';
+    }
+
+    match /branches/{docId} {
+      allow read: if isSignedIn();
+      allow create, update: if isManager();
+      allow delete: if isAdmin();
+    }
+
+    match /employees/{docId} {
+      allow read: if isSignedIn();
+      allow create, update: if isManager();
+      allow delete: if isAdmin();
+    }
+
+    match /cheerItems/{docId} {
+      allow read: if isSignedIn();
+      allow create, update: if isManager();
+      allow delete: if isAdmin();
+    }
+
+    match /sales/{docId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+  }
+}
