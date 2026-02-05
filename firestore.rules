@@ -53,20 +53,20 @@ service cloud.firestore {
 
     match /branches/{docId} {
       allow read: if isSignedIn();
-      allow create, update: if isManager();
-      allow delete: if isAdmin();
+      allow create, update: if isManager() || isPrimaryAdmin();
+      allow delete: if isAdmin() || isPrimaryAdmin();
     }
 
     match /employees/{docId} {
       allow read: if isSignedIn();
-      allow create, update: if isManager();
-      allow delete: if isAdmin();
+      allow create, update: if isManager() || isPrimaryAdmin();
+      allow delete: if isAdmin() || isPrimaryAdmin();
     }
 
     match /cheerItems/{docId} {
       allow read: if isSignedIn();
-      allow create, update: if isManager();
-      allow delete: if isAdmin();
+      allow create, update: if isManager() || isPrimaryAdmin();
+      allow delete: if isAdmin() || isPrimaryAdmin();
     }
 
     match /sales/{docId} {
