@@ -1,12 +1,14 @@
 import { createContext, useContext } from 'react'
 import type { User } from 'firebase/auth'
+import type { UserRole } from '../types'
 
 export type AuthContextValue = {
   user: User | null
   loading: boolean
-  role: 'admin' | 'manager' | 'staff'
+  role: UserRole
   isAdmin: boolean
   isManager: boolean
+  isPrimaryAdmin: boolean
   signInWithEmailPassword: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
 }

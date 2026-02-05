@@ -5,12 +5,46 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function roleFromClaims() {
+      return request.auth.token.role;
+    }
+
+    function roleFromAccess() {
+      return get(/databases/$(database)/documents/userAccess/$(request.auth.token.email)).data.role;
+    }
+
+    function role() {
+      return (roleFromClaims() == 'admin' || roleFromClaims() == 'manager' || roleFromClaims() == 'staff')
+        ? roleFromClaims()
+        : (request.auth.token.admin == true)
+          ? 'admin'
+          : (exists(/databases/$(database)/documents/userAccess/$(request.auth.token.email)))
+            ? roleFromAccess()
+            : 'staff';
+    }
+
     function isManager() {
-      return isSignedIn() && (request.auth.token.role == 'admin' || request.auth.token.role == 'manager');
+      return isSignedIn() && (role() == 'admin' || role() == 'manager');
     }
 
     function isAdmin() {
-      return isSignedIn() && request.auth.token.role == 'admin';
+      return isSignedIn() && role() == 'admin';
+    }
+
+    function isPrimaryAdmin() {
+      return isSignedIn() && (
+        request.auth.token.primaryAdmin == true ||
+        (
+          exists(/databases/$(database)/documents/userAccess/$(request.auth.token.email)) &&
+          roleFromAccess() == 'admin' &&
+          get(/databases/$(database)/documents/userAccess/$(request.auth.token.email)).data.primaryAdmin == true
+        )
+      );
+    }
+
+    match /userAccess/{email} {
+      allow read: if isSignedIn() && (isPrimaryAdmin() || request.auth.token.email == email);
+      allow create, update, delete: if isPrimaryAdmin();
     }
 
     match /branches/{docId} {

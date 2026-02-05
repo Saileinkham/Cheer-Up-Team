@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "set-admin": "node scripts/setAdmin.mjs"
+    "set-admin": "node scripts/setAdmin.mjs",
+    "create-user": "node scripts/createUser.mjs"
   },
   "dependencies": {
     "firebase": "^12.8.0",

@@ -5,22 +5,25 @@ import {
   deleteDoc,
   doc,
   getDocs,
+  getDoc,
   orderBy,
   query,
   serverTimestamp,
+  setDoc,
   updateDoc,
   where,
   writeBatch,
   type DocumentData,
 } from 'firebase/firestore'
 import { getFirebase } from './firebase'
-import type { Branch, CheerItem, Employee, Sale, SaleItem } from '../types'
+import type { Branch, CheerItem, Employee, Sale, SaleItem, UserAccess, UserRole } from '../types'
 
 const COLLECTIONS = {
   branches: 'branches',
   employees: 'employees',
   sales: 'sales',
   cheerItems: 'cheerItems',
+  userAccess: 'userAccess',
 } as const
 
 function toIsoDate(value: Timestamp | Date): string {
@@ -67,6 +70,17 @@ function normalizeCheerItemDoc(id: string, data: DocumentData): CheerItem {
   const price = Number(data.price ?? 0)
   const active = Boolean(data.active ?? true)
   return { id, name, price: Number.isFinite(price) && price >= 0 ? price : 0, active }
+}
+
+function normalizeRole(value: unknown): UserRole {
+  return value === 'admin' || value === 'manager' || value === 'staff' ? value : 'staff'
+}
+
+function normalizeUserAccessDoc(id: string, data: DocumentData): UserAccess {
+  const email = String(data.email ?? id).trim().toLowerCase()
+  const role = normalizeRole(data.role)
+  const primaryAdmin = Boolean(data.primaryAdmin ?? false)
+  return { email, role, primaryAdmin: primaryAdmin ? true : undefined }
 }
 
 export async function listBranches(): Promise<Branch[]> {
@@ -177,6 +191,43 @@ export async function deleteCheerItem(id: string): Promise<void> {
   const trimmed = id.trim()
   if (!trimmed) return
   await deleteDoc(doc(db, COLLECTIONS.cheerItems, trimmed))
+}
+
+export async function listUserAccess(): Promise<UserAccess[]> {
+  const { db } = getFirebase()
+  const q = query(collection(db, COLLECTIONS.userAccess), orderBy('email', 'asc'))
+  const snap = await getDocs(q)
+  return snap.docs.map((d) => normalizeUserAccessDoc(d.id, d.data() as DocumentData))
+}
+
+export async function upsertUserAccess(input: UserAccess): Promise<void> {
+  const { db } = getFirebase()
+  const email = input.email.trim().toLowerCase()
+  if (!email || !email.includes('@')) return
+  const role = normalizeRole(input.role)
+  const patch: Record<string, unknown> = {
+    email,
+    role,
+    primaryAdmin: Boolean(input.primaryAdmin ?? false),
+    updatedAt: serverTimestamp(),
+  }
+  await setDoc(doc(db, COLLECTIONS.userAccess, email), patch, { merge: true })
+}
+
+export async function deleteUserAccess(email: string): Promise<void> {
+  const { db } = getFirebase()
+  const id = email.trim().toLowerCase()
+  if (!id) return
+  await deleteDoc(doc(db, COLLECTIONS.userAccess, id))
+}
+
+export async function getUserAccess(email: string): Promise<UserAccess | null> {
+  const { db } = getFirebase()
+  const id = email.trim().toLowerCase()
+  if (!id) return null
+  const snap = await getDoc(doc(db, COLLECTIONS.userAccess, id))
+  if (!snap.exists()) return null
+  return normalizeUserAccessDoc(snap.id, snap.data() as DocumentData)
 }
 
 export async function createSale(input: {

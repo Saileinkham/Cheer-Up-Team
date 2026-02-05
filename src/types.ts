@@ -26,6 +26,14 @@ export type CheerItem = {
   active: boolean
 }
 
+export type UserRole = 'admin' | 'manager' | 'staff'
+
+export type UserAccess = {
+  email: string
+  role: UserRole
+  primaryAdmin?: boolean
+}
+
 export type Sale = {
   id: string
   employeeId: string

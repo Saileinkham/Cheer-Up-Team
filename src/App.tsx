@@ -7,6 +7,7 @@ import { NewDashboardPage } from './pages/NewDashboardPage'
 import { EmployeesPage } from './pages/EmployeesPage'
 import { SalesUpdatePage } from './pages/SalesUpdatePage'
 import { CheerItemsPage } from './pages/CheerItemsPage'
+import { UsersPage } from './pages/UsersPage'
 import { LoginPage } from './pages/LoginPage'
 import { useAuth } from './lib/authContext'
 
@@ -33,6 +34,7 @@ function AppAuthed() {
       {activeTab === 'employees' ? <EmployeesPage /> : null}
       {activeTab === 'sales' ? <SalesUpdatePage /> : null}
       {activeTab === 'cheerItems' ? <CheerItemsPage /> : null}
+      {activeTab === 'users' ? <UsersPage /> : null}
     </Layout>
   )
 }

@@ -3,6 +3,7 @@ import type { Branch, Employee } from '../types'
 import { createBranch, createEmployee, listBranches, listEmployees } from '../lib/firestore'
 import { employeeDisplayName } from '../lib/employee'
 import { useAuth } from '../lib/authContext'
+import { uploadEmployeePhoto } from '../lib/storage'
 
 export function EmployeesPage() {
   const auth = useAuth()
@@ -103,6 +104,37 @@ export function EmployeesPage() {
     }
   }
 
+  async function onUploadPhoto(file: File) {
+    if (!auth.user) {
+      setError('กรุณาเข้าสู่ระบบก่อน')
+      return
+    }
+    if (!auth.isManager) {
+      setError('บัญชีนี้ไม่มีสิทธิ์อัปโหลดรูปพนักงาน')
+      return
+    }
+    setLoading(true)
+    setError(null)
+    setSuccess(null)
+    try {
+      const url = await uploadEmployeePhoto(file)
+      setEmployeePhotoUrl(url)
+      setSuccess('อัปโหลดรูปเรียบร้อย (ระบบใส่ลิงก์ให้แล้ว)')
+    } catch (err) {
+      const anyErr = err as { code?: unknown; message?: unknown }
+      const code = typeof anyErr?.code === 'string' ? anyErr.code : ''
+      if (code === 'storage/unauthorized') {
+        setError('อัปโหลดไม่สำเร็จ: Storage rules ไม่อนุญาต หรือยังไม่ได้เปิด Firebase Storage')
+      } else if (code === 'storage/object-not-found') {
+        setError('อัปโหลดไม่สำเร็จ: ไม่พบปลายทาง Storage')
+      } else {
+        setError(err instanceof Error ? err.message : String(err))
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="stack">
       {error ? <div className="errorBox">{error}</div> : null}
@@ -180,6 +212,19 @@ export function EmployeesPage() {
               onChange={(e) => setEmployeePhotoUrl(e.target.value)}
               placeholder="https://..."
             />
+          </div>
+          <div className="row">
+            <label>อัปโหลดรูป</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (file) void onUploadPhoto(file)
+              }}
+              disabled={loading || !auth.user || !auth.isManager}
+            />
+            <div className="hint">อัปโหลดแล้วระบบจะเติมลิงก์รูปให้อัตโนมัติ</div>
           </div>
           <div className="row">
             <label>ชื่อ</label>

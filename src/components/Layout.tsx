@@ -2,13 +2,14 @@ import type { ReactNode } from 'react'
 import './layout.css'
 import { useAuth } from '../lib/authContext'
 
-export type AppTab = 'dashboard' | 'employees' | 'sales' | 'cheerItems'
+export type AppTab = 'dashboard' | 'employees' | 'sales' | 'cheerItems' | 'users'
 
 const TAB_LABEL: Record<AppTab, string> = {
   dashboard: 'Dashboard',
   employees: 'ทะเบียนพนักงาน',
   sales: 'อัปเดตรายการขาย',
   cheerItems: 'รายการเชียร์ขาย',
+  users: 'ตั้งค่าผู้ใช้',
 }
 
 export function Layout(props: {
@@ -17,6 +18,10 @@ export function Layout(props: {
   children: ReactNode
 }) {
   const auth = useAuth()
+  const tabs = (Object.keys(TAB_LABEL) as AppTab[]).filter((tab) => {
+    if (tab === 'users') return auth.isPrimaryAdmin
+    return true
+  })
 
   return (
     <div className="layoutRoot">
@@ -27,7 +32,7 @@ export function Layout(props: {
         </div>
 
         <nav className="layoutSidebarNav">
-          {(Object.keys(TAB_LABEL) as AppTab[]).map((tab) => (
+          {tabs.map((tab) => (
             <button
               key={tab}
               type="button"
