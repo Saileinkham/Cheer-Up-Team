@@ -40,14 +40,14 @@ service cloud.firestore {
         request.auth.token.primaryAdmin == true ||
         (
           exists(/databases/$(database)/documents/userAccess/$(userEmail())) &&
-          roleFromAccess() == 'admin' &&
           get(/databases/$(database)/documents/userAccess/$(userEmail())).data.primaryAdmin == true
         )
       );
     }
 
     match /userAccess/{email} {
-      allow read: if isSignedIn() && (isPrimaryAdmin() || userEmail() == email.lower());
+      allow get: if isSignedIn() && userEmail() == email.lower();
+      allow list: if isPrimaryAdmin();
       allow create, update, delete: if isPrimaryAdmin();
     }
 
