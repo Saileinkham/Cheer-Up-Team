@@ -222,7 +222,7 @@ export function SalesUpdatePage() {
       {success ? <div className="card">{success}</div> : null}
 
       <section className="card stack">
-        <div style={{ fontWeight: 900, fontSize: 18 }}>อัปเดตรายการขาย</div>
+        <div className="pageTitle">อัปเดตรายการขาย</div>
         <div className="grid2">
           <div className="row">
             <label>สาขา</label>
@@ -262,7 +262,7 @@ export function SalesUpdatePage() {
       </section>
 
       <section className="card stack">
-        <div style={{ fontWeight: 900, fontSize: 16 }}>รายการเชียร์ขายในบิล</div>
+        <div className="cardTitleLg">รายการเชียร์ขายในบิล</div>
         <div className="hint">
           เลือกรายการจากรายการเชียร์ขาย หรือพิมพ์ชื่อเองก็ได้ ใส่จำนวนและราคา จากนั้นกดบันทึกด้านล่าง
         </div>
@@ -362,7 +362,7 @@ export function SalesUpdatePage() {
       </section>
 
       <section className="card stack">
-        <div style={{ fontWeight: 900, fontSize: 16 }}>ยอดขายล่าสุดในเดือนนี้</div>
+        <div className="cardTitleLg">ยอดขายล่าสุดในเดือนนี้</div>
 
         <table className="table">
           <thead>

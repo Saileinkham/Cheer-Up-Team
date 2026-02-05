@@ -113,7 +113,7 @@ export function CheerItemsPage() {
 
       <section className="card stack">
         <div>
-          <div style={{ fontWeight: 900, fontSize: 16 }}>รายการเชียร์ขาย</div>
+          <div className="cardTitleLg">รายการเชียร์ขาย</div>
           <div className="hint">
             ใช้เป็นรายการให้เลือกตอนอัปเดตรายการขาย ({activeCount}/{items.length} รายการที่เปิดใช้งาน)
           </div>
@@ -146,8 +146,7 @@ export function CheerItemsPage() {
       </section>
 
       <section className="card stack">
-        <div style={{ fontWeight: 900, fontSize: 16 }}>รายการทั้งหมด</div>
-
+        <div className="cardTitleLg">รายการทั้งหมด</div>
         <table className="table">
           <thead>
             <tr>

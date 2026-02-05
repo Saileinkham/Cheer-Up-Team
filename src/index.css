@@ -1,5 +1,6 @@
 :root {
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  font-size: 15px;
   line-height: 1.5;
   font-weight: 400;
 
@@ -7,6 +8,16 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  --font-size-base: 15px;
+  --font-size-label: 14px;
+  --font-size-input: 15px;
+  --font-size-hint: 12px;
+  --font-size-page-title: 22px;
+  --font-size-card-title-lg: 18px;
+  --font-size-card-title: 16px;
+  --control-height: 44px;
+  --control-radius: 12px;
 }
 
 *,
@@ -21,4 +32,12 @@ body {
   min-height: 100vh;
   background: #f4f7ff;
   color: #0f172a;
+  font-size: var(--font-size-base);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
 }

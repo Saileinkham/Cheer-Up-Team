@@ -11,6 +11,16 @@ type RankedRow = {
   value: number
 }
 
+type RankedBranchRow = {
+  branchId: string
+  value: number
+}
+
+type RankedItemRow = {
+  name: string
+  value: number
+}
+
 function numberOrZero(value: unknown): number {
   const n = Number(value)
   return Number.isFinite(n) ? n : 0
@@ -26,6 +36,8 @@ export function NewDashboardPage() {
   const [monthIso, setMonthIso] = useState(currentMonthIso())
   const [branchId, setBranchId] = useState('')
   const [cheerItemId, setCheerItemId] = useState('')
+  const [dashboardView, setDashboardView] = useState<'cards' | 'table'>('cards')
+  const [summaryKind, setSummaryKind] = useState<'items' | 'branches'>('items')
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -112,8 +124,7 @@ export function NewDashboardPage() {
   const qtyRanked = useMemo(() => {
     const rows: RankedRow[] = employeesInScope.map((e) => ({ employee: e, value: qtyByEmployee.get(e.id) ?? 0 }))
     const top = [...rows].sort((a, b) => b.value - a.value).slice(0, 5)
-    const bottom = [...rows].sort((a, b) => a.value - b.value).slice(0, 5)
-    return { top, bottom }
+    return { top }
   }, [employeesInScope, qtyByEmployee])
 
   const qtyByBranch = useMemo(() => {
@@ -126,8 +137,8 @@ export function NewDashboardPage() {
       map.set(s.branchId, (map.get(s.branchId) ?? 0) + qty)
     }
     return Array.from(map.entries())
-      .map(([id, qty]) => ({ branchId: id, qty }))
-      .sort((a, b) => b.qty - a.qty)
+      .map(([id, qty]) => ({ branchId: id, value: qty }))
+      .sort((a, b) => b.value - a.value)
   }, [sales, cheerItemName])
 
   const perHeadRanked = useMemo(() => {
@@ -152,21 +163,55 @@ export function NewDashboardPage() {
       return { employee: e, value }
     })
     const top = [...rows].sort((a, b) => b.value - a.value).slice(0, 5)
-    const bottom = [...rows].sort((a, b) => a.value - b.value).slice(0, 5)
-    return { top, bottom }
+    return { top }
   }, [employeesInScope, salesInScope])
+
+  const itemQtyRanked = useMemo(() => {
+    const map = new Map<string, number>()
+    for (const s of salesInScope) {
+      for (const it of s.items ?? []) {
+        const name = typeof it.name === 'string' ? it.name.trim() : ''
+        if (!name) continue
+        map.set(name, (map.get(name) ?? 0) + numberOrZero(it.qty))
+      }
+    }
+    const rows: RankedItemRow[] = Array.from(map.entries())
+      .map(([name, value]) => ({ name, value }))
+      .filter((r) => r.value > 0)
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 10)
+    return rows
+  }, [salesInScope])
+
+  const branchQtyRanked = useMemo(() => qtyByBranch.slice(0, 10), [qtyByBranch])
 
   return (
     <div className="stack">
       {error ? <div className="errorBox">{error}</div> : null}
 
       <section className="card stack">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', gap: 12, flexWrap: 'wrap' }}>
+        <div className="cardHeader">
           <div>
-            <div style={{ fontWeight: 900, fontSize: 18 }}>Dashboard</div>
+            <div className="pageTitle">Dashboard</div>
             <div className="hint">สรุป Top/Bottom 5 เชื่อมข้อมูลจากทะเบียนพนักงานและรายการขาย</div>
           </div>
           <div className="actions">
+            <div className="segmented" role="tablist" aria-label="รูปแบบรายงาน">
+              <button
+                type="button"
+                className={dashboardView === 'cards' ? 'segmentedBtn active' : 'segmentedBtn'}
+                onClick={() => setDashboardView('cards')}
+              >
+                แบบจัดอันดับ
+              </button>
+              <button
+                type="button"
+                className={dashboardView === 'table' ? 'segmentedBtn active' : 'segmentedBtn'}
+                onClick={() => setDashboardView('table')}
+              >
+                แบบตาราง
+              </button>
+            </div>
             <button type="button" className="secondaryBtn" onClick={() => void refreshSales()} disabled={loading}>
               รีเฟรช
             </button>
@@ -206,31 +251,21 @@ export function NewDashboardPage() {
       <div className="grid2">
         <section className="card stack">
           <div>
-            <div style={{ fontWeight: 900, fontSize: 16 }}>Top 5 พนักงาน (จำนวนขาย)</div>
+            <div className="cardTitleLg">Top 5 พนักงานขายเก่ง</div>
             <div className="hint">{cheerItemName ? `รายการ: ${cheerItemName}` : 'ยังไม่ได้เลือกรายการ'}</div>
           </div>
-          <div className="stack">
-            {qtyRanked.top.map((r) => (
-              <div key={r.employee.id} className="badge" style={{ justifyContent: 'space-between' }}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
-                  {r.employee.photoUrl ? <img className="avatar" src={r.employee.photoUrl} alt="" /> : null}
-                  <span>{employeeDisplayName(r.employee)}</span>
-                </span>
-                <strong>{Math.round(r.value)}</strong>
-              </div>
-            ))}
-          </div>
-          <div>
-            <div style={{ fontWeight: 900, fontSize: 16 }}>Bottom 5 พนักงาน (จำนวนขายต่ำ)</div>
-          </div>
-          <div className="stack">
-            {qtyRanked.bottom.map((r) => (
-              <div key={r.employee.id} className="badge" style={{ justifyContent: 'space-between' }}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
-                  {r.employee.photoUrl ? <img className="avatar" src={r.employee.photoUrl} alt="" /> : null}
-                  <span>{employeeDisplayName(r.employee)}</span>
-                </span>
-                <strong>{Math.round(r.value)}</strong>
+          <div className="rankList">
+            {qtyRanked.top.map((r, idx) => (
+              <div key={r.employee.id} className="rankItem">
+                <div className="rankIndex">{idx + 1}</div>
+                <div className="rankMain">
+                  {r.employee.photoUrl ? <img className="avatar" src={r.employee.photoUrl} alt="" /> : <span className="avatarPlaceholder" />}
+                  <div style={{ minWidth: 0 }}>
+                    <div className="rankName">{employeeDisplayName(r.employee)}</div>
+                    <div className="rankSub">{branchNameById.get(r.employee.branchId) ?? '-'}</div>
+                  </div>
+                </div>
+                <div className="rankValue">{Math.round(r.value)}</div>
               </div>
             ))}
           </div>
@@ -238,31 +273,21 @@ export function NewDashboardPage() {
 
         <section className="card stack">
           <div>
-            <div style={{ fontWeight: 900, fontSize: 16 }}>Top 5 Per Head (ยอดขาย/ลูกค้า)</div>
+            <div className="cardTitleLg">Top 5 Per Head</div>
             <div className="hint">ต้องบันทึกจำนวนลูกค้าในหน้า “อัปเดตรายการขาย” เพื่อความแม่นยำ</div>
           </div>
-          <div className="stack">
-            {perHeadRanked.top.map((r) => (
-              <div key={r.employee.id} className="badge" style={{ justifyContent: 'space-between' }}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
-                  {r.employee.photoUrl ? <img className="avatar" src={r.employee.photoUrl} alt="" /> : null}
-                  <span>{employeeDisplayName(r.employee)}</span>
-                </span>
-                <strong>{formatAmount(r.value)}</strong>
-              </div>
-            ))}
-          </div>
-          <div>
-            <div style={{ fontWeight: 900, fontSize: 16 }}>Bottom 5 Per Head</div>
-          </div>
-          <div className="stack">
-            {perHeadRanked.bottom.map((r) => (
-              <div key={r.employee.id} className="badge" style={{ justifyContent: 'space-between' }}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
-                  {r.employee.photoUrl ? <img className="avatar" src={r.employee.photoUrl} alt="" /> : null}
-                  <span>{employeeDisplayName(r.employee)}</span>
-                </span>
-                <strong>{formatAmount(r.value)}</strong>
+          <div className="rankList">
+            {perHeadRanked.top.map((r, idx) => (
+              <div key={r.employee.id} className="rankItem">
+                <div className="rankIndex">{idx + 1}</div>
+                <div className="rankMain">
+                  {r.employee.photoUrl ? <img className="avatar" src={r.employee.photoUrl} alt="" /> : <span className="avatarPlaceholder" />}
+                  <div style={{ minWidth: 0 }}>
+                    <div className="rankName">{employeeDisplayName(r.employee)}</div>
+                    <div className="rankSub">{branchNameById.get(r.employee.branchId) ?? '-'}</div>
+                  </div>
+                </div>
+                <div className="rankValue">{formatAmount(r.value)}</div>
               </div>
             ))}
           </div>
@@ -270,35 +295,123 @@ export function NewDashboardPage() {
       </div>
 
       <section className="card stack">
-        <div style={{ fontWeight: 900, fontSize: 16 }}>จำนวนขายดี by สาขา</div>
-        <div className="hint">{cheerItemName ? `รายการ: ${cheerItemName}` : 'ยังไม่ได้เลือกรายการ'}</div>
-        <table className="table">
-          <thead>
-            <tr>
-              <th>สาขา</th>
-              <th style={{ width: 160 }}>จำนวน</th>
-            </tr>
-          </thead>
-          <tbody>
-            {qtyByBranch.length === 0 ? (
-              <tr>
-                <td className="hint" colSpan={2}>
-                  ยังไม่มีข้อมูลจำนวนขายของรายการนี้ในเดือนที่เลือก
-                </td>
-              </tr>
-            ) : (
-              qtyByBranch.map((r) => (
-                <tr key={r.branchId}>
-                  <td>{branchNameById.get(r.branchId) ?? r.branchId}</td>
-                  <td>{Math.round(r.qty)}</td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-        <div className="hint">
-          หมายเหตุ: Dashboard คิดจากข้อมูลใน collection <b>sales</b> และผูกชื่อพนักงาน/สาขาจากทะเบียนพนักงาน
+        <div className="cardHeader">
+          <div>
+            <div className="cardTitleLg">สรุปยอดขาย</div>
+            <div className="hint">
+              {summaryKind === 'branches'
+                ? cheerItemName
+                  ? `สาขาที่ขายได้ (รายการ: ${cheerItemName})`
+                  : 'กรุณาเลือกรายการเชียร์ขาย'
+                : 'รายการที่ขายได้ (รวมทุกสินค้าในเดือนที่เลือก)'}
+            </div>
+          </div>
+          <div className="actions">
+            <div className="segmented" role="tablist" aria-label="ประเภทสรุป">
+              <button
+                type="button"
+                className={summaryKind === 'items' ? 'segmentedBtn active' : 'segmentedBtn'}
+                onClick={() => setSummaryKind('items')}
+              >
+                รายการขายดี
+              </button>
+              <button
+                type="button"
+                className={summaryKind === 'branches' ? 'segmentedBtn active' : 'segmentedBtn'}
+                onClick={() => setSummaryKind('branches')}
+              >
+                สาขาขายดี
+              </button>
+            </div>
+          </div>
         </div>
+
+        {dashboardView === 'cards' ? (
+          summaryKind === 'items' ? (
+            <div className="rankList">
+              {itemQtyRanked.length === 0 ? (
+                <div className="hint">ยังไม่มีข้อมูลรายการขายในเดือนที่เลือก</div>
+              ) : (
+                itemQtyRanked.map((r, idx) => (
+                  <div key={r.name} className="rankItem">
+                    <div className="rankIndex">{idx + 1}</div>
+                    <div className="rankMain">
+                      <div style={{ minWidth: 0 }}>
+                        <div className="rankName">{r.name}</div>
+                        <div className="rankSub">จำนวนรวม</div>
+                      </div>
+                    </div>
+                    <div className="rankValue">{Math.round(r.value)}</div>
+                  </div>
+                ))
+              )}
+            </div>
+          ) : (
+            <div className="rankList">
+              {branchQtyRanked.length === 0 ? (
+                <div className="hint">ยังไม่มีข้อมูลจำนวนขายของรายการนี้ในเดือนที่เลือก</div>
+              ) : (
+                branchQtyRanked.map((r: RankedBranchRow, idx) => (
+                  <div key={r.branchId} className="rankItem">
+                    <div className="rankIndex">{idx + 1}</div>
+                    <div className="rankMain">
+                      <div style={{ minWidth: 0 }}>
+                        <div className="rankName">{branchNameById.get(r.branchId) ?? r.branchId}</div>
+                        <div className="rankSub">จำนวนขาย (รายการที่เลือก)</div>
+                      </div>
+                    </div>
+                    <div className="rankValue">{Math.round(r.value)}</div>
+                  </div>
+                ))
+              )}
+            </div>
+          )
+        ) : (
+          <table className="table">
+            <thead>
+              <tr>
+                <th style={{ width: 70 }}>อันดับ</th>
+                <th>{summaryKind === 'items' ? 'รายการ' : 'สาขา'}</th>
+                <th style={{ width: 160 }}>จำนวน</th>
+              </tr>
+            </thead>
+            <tbody>
+              {summaryKind === 'items' ? (
+                itemQtyRanked.length === 0 ? (
+                  <tr>
+                    <td className="hint" colSpan={3}>
+                      ยังไม่มีข้อมูลรายการขายในเดือนที่เลือก
+                    </td>
+                  </tr>
+                ) : (
+                  itemQtyRanked.map((r, idx) => (
+                    <tr key={r.name}>
+                      <td>{idx + 1}</td>
+                      <td>{r.name}</td>
+                      <td>{Math.round(r.value)}</td>
+                    </tr>
+                  ))
+                )
+              ) : branchQtyRanked.length === 0 ? (
+                <tr>
+                  <td className="hint" colSpan={3}>
+                    ยังไม่มีข้อมูลจำนวนขายของรายการนี้ในเดือนที่เลือก
+                  </td>
+                </tr>
+              ) : (
+                branchQtyRanked.map((r, idx) => (
+                  <tr key={r.branchId}>
+                    <td>{idx + 1}</td>
+                    <td>{branchNameById.get(r.branchId) ?? r.branchId}</td>
+                    <td>{Math.round(r.value)}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        )}
+
+        <div className="hint">หมายเหตุ: คิดจากข้อมูลใน collection sales และผูกชื่อพนักงาน/สาขาจากทะเบียนพนักงาน</div>
       </section>
     </div>
   )

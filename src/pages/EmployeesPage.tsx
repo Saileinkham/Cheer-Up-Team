@@ -141,7 +141,7 @@ export function EmployeesPage() {
       {success ? <div className="card">{success}</div> : null}
 
       <section className="card stack">
-        <div style={{ fontWeight: 900, fontSize: 16 }}>สาขา</div>
+        <div className="cardTitleLg">สาขา</div>
         <div className="hint">ใช้สำหรับกรองรายงาน และผูกกับทะเบียนพนักงาน</div>
 
         <div className="grid2">
@@ -191,7 +191,7 @@ export function EmployeesPage() {
       </section>
 
       <section className="card stack">
-        <div style={{ fontWeight: 900, fontSize: 16 }}>เพิ่มพนักงาน</div>
+        <div className="cardTitleLg">เพิ่มพนักงาน</div>
         {!auth.isManager ? <div className="hint">สิทธิ์ที่ต้องใช้: Manager หรือ Admin</div> : null}
 
         <div className="grid2">
@@ -259,7 +259,7 @@ export function EmployeesPage() {
       </section>
 
       <section className="card stack">
-        <div style={{ fontWeight: 900, fontSize: 16 }}>รายชื่อพนักงาน</div>
+        <div className="cardTitleLg">รายชื่อพนักงาน</div>
         <div className="hint">ข้อมูลหน้านี้ถูกใช้ร่วมกับหน้ารายการขายและ Dashboard</div>
 
         <table className="table">

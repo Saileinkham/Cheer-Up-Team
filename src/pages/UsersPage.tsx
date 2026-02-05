@@ -94,7 +94,7 @@ export function UsersPage() {
 
       <section className="card stack">
         <div>
-          <div style={{ fontWeight: 900, fontSize: 18 }}>ตั้งค่าผู้ใช้</div>
+          <div className="pageTitle">ตั้งค่าผู้ใช้</div>
           <div className="hint">
             ใช้กำหนดสิทธิ์แบบ Role ให้ผู้ใช้ตามอีเมล (อ่านจาก Firebase Auth) โดย Admin หลักเท่านั้นที่จัดการได้
           </div>
@@ -112,7 +112,7 @@ export function UsersPage() {
       </section>
 
       <section className="card stack">
-        <div style={{ fontWeight: 900, fontSize: 16 }}>เพิ่ม/แก้ไขผู้ใช้</div>
+        <div className="cardTitleLg">เพิ่ม/แก้ไขผู้ใช้</div>
         {!canManageUsers ? <div className="hint">ต้องเป็น Admin หลักจึงจะจัดการผู้ใช้ได้</div> : null}
 
         <div className="grid2">
@@ -164,7 +164,7 @@ export function UsersPage() {
       </section>
 
       <section className="card stack">
-        <div style={{ fontWeight: 900, fontSize: 16 }}>รายชื่อผู้ใช้ที่ตั้งค่าแล้ว</div>
+        <div className="cardTitleLg">รายชื่อผู้ใช้ที่ตั้งค่าแล้ว</div>
         {!canManageUsers ? <div className="hint">เฉพาะ Admin หลักเท่านั้นที่ดูรายชื่อทั้งหมดได้</div> : null}
 
         <table className="table">
@@ -222,4 +222,3 @@ export function UsersPage() {
     </div>
   )
 }
-
