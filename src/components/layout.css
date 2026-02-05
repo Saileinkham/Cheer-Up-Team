@@ -77,12 +77,17 @@
   border: 1px solid rgba(255, 255, 255, 0.28);
   background: rgba(255, 255, 255, 0.14);
   color: rgba(255, 255, 255, 0.90);
+  align-items: start;
 }
 
 .layoutSidebar .secondaryBtn {
   border-color: rgba(255, 255, 255, 0.45);
   background: rgba(255, 255, 255, 0.14);
   color: #ffffff;
+}
+
+.layoutSidebarFooter .secondaryBtn {
+  width: 100%;
 }
 
 .layoutSidebar .hint {
@@ -185,6 +190,25 @@
   background: #ffffff;
   color: #0f172a;
   outline: none;
+}
+
+.row input[type='file'] {
+  padding: 8px 10px;
+}
+
+.row input[type='file']::file-selector-button {
+  border: 1px solid rgba(15, 23, 42, 0.18);
+  background: #ffffff;
+  color: #0f172a;
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.row input[type='file']::file-selector-button:hover {
+  border-color: rgba(37, 99, 235, 0.55);
 }
 
 .row input:focus,

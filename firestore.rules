@@ -5,12 +5,16 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function userEmail() {
+      return request.auth.token.email.lower();
+    }
+
     function roleFromClaims() {
       return request.auth.token.role;
     }
 
     function roleFromAccess() {
-      return get(/databases/$(database)/documents/userAccess/$(request.auth.token.email)).data.role;
+      return get(/databases/$(database)/documents/userAccess/$(userEmail())).data.role;
     }
 
     function role() {
@@ -18,7 +22,7 @@ service cloud.firestore {
         ? roleFromClaims()
         : (request.auth.token.admin == true)
           ? 'admin'
-          : (exists(/databases/$(database)/documents/userAccess/$(request.auth.token.email)))
+          : (exists(/databases/$(database)/documents/userAccess/$(userEmail())))
             ? roleFromAccess()
             : 'staff';
     }
@@ -35,15 +39,15 @@ service cloud.firestore {
       return isSignedIn() && (
         request.auth.token.primaryAdmin == true ||
         (
-          exists(/databases/$(database)/documents/userAccess/$(request.auth.token.email)) &&
+          exists(/databases/$(database)/documents/userAccess/$(userEmail())) &&
           roleFromAccess() == 'admin' &&
-          get(/databases/$(database)/documents/userAccess/$(request.auth.token.email)).data.primaryAdmin == true
+          get(/databases/$(database)/documents/userAccess/$(userEmail())).data.primaryAdmin == true
         )
       );
     }
 
     match /userAccess/{email} {
-      allow read: if isSignedIn() && (isPrimaryAdmin() || request.auth.token.email == email);
+      allow read: if isSignedIn() && (isPrimaryAdmin() || userEmail() == email.lower());
       allow create, update, delete: if isPrimaryAdmin();
     }
 
